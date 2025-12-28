@@ -13,35 +13,17 @@
 
 //       // Convert contacts to a map
 //       List<Map<String, dynamic>> contactsJson = contacts.map((contact) {
-//         return {
-//           'displayName': contact.displayName,
-//           'givenName': contact.givenName,
-//           'middleName': contact.middleName,
-//           'familyName': contact.familyName,
-//           'prefix': contact.prefix,
-//           'suffix': contact.suffix,
-//           'company': contact.company,
-//           'jobTitle': contact.jobTitle,
-//           'emails': contact.emails?.map((e) => {'label': e.label, 'value': e.value}).toList(),
-//           'phones': contact.phones?.map((p) => {'label': p.label, 'value': p.value}).toList(),
-//           'postalAddresses': contact.postalAddresses?.map((a) => {
+// Lightweight mobile contact sync stub.
+// The original implementation used `contacts_service`, which was removed
+// from the project's dependencies to avoid Android build/plugin issues.
+// If you add `contacts_service` back, replace this with the real impl.
+
+class ContactSyncService {
+  Future<void> syncContacts() async {
+    // No-op placeholder for mobile platforms when the contacts plugin
+    // is unavailable. Keeps first-launch flow safe.
+    return;
+  }
+}
+
 //             'label': a.label,
-//             'street': a.street,
-//             'city': a.city,
-//             'postcode': a.postcode,
-//             'region': a.region,
-//             'country': a.country
-//           }).toList(),
-//           'avatar': contact.avatar,
-//         };
-//       }).toList();
-
-//       // Get the directory to save the file
-//       final directory = await getApplicationDocumentsDirectory();
-//       final file = File('${directory.path}/contacts.json');
-
-//       // Write the file
-//       await file.writeAsString(jsonEncode(contactsJson));
-//     }
-//   }
-// }

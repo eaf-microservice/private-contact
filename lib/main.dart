@@ -1,5 +1,4 @@
 import 'package:contactme/screens/home.dart';
-import 'package:contactme/services/contact_sync.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,7 +18,7 @@ Future<void> _handleFirstLaunch() async {
 
   if (isFirstLaunch) {
     // This is the first launch, run the contact sync.
-    await ContactSyncService().syncContacts();
+    // await ContactSyncService().syncContacts();
 
     // Set the flag to false so this doesn't run again.
     await prefs.setBool(isFirstLaunchKey, false);

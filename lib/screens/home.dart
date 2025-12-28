@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: 'About',
             icon: const Icon(Icons.info_outline),
             onPressed: () {
-              () => AboutMe(
+              AboutMe(
                 applicationName: 'Contact Me',
                 version: '1.0.0',
                 description:
@@ -128,6 +128,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    CircleAvatar(
+                      maxRadius: 120,
+                      child: Image.asset('assets/icon.png'),
+                      backgroundColor: Colors.white,
+                    ),
+                    const SizedBox(height: 24),
                     Text(
                       'Saved number: $phoneLabel',
                       textAlign: TextAlign.center,
@@ -152,22 +158,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // OutlinedButton.icon(
-                    //   onPressed: () async {
-                    //     final updated = await Navigator.push<String?>(
-                    //       context,
-                    //       MaterialPageRoute(
-                    //         builder: (_) => const SettingsScreen(),
-                    //       ),
-                    //     );
-                    //     if (updated != null) setState(() => _phone = updated);
-                    //   },
-                    //   icon: const Icon(Icons.settings),
-                    //   label: const Text('Settings'),
-                    //   style: OutlinedButton.styleFrom(
-                    //     padding: const EdgeInsets.symmetric(vertical: 15),
-                    //   ),
-                    // ),
                   ],
                 ),
               ),

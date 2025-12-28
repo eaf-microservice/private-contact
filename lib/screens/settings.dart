@@ -44,6 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await StorageService.clearPhone();
     _controller.clear();
     _showSnack('Cleared');
+    if (mounted) Navigator.pop(context, '');
   }
 
   void _showSnack(String msg, {bool error = false}) {
@@ -78,7 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
-                      hintText: '+1 555 012 3456',
+                      hintText: '+212 645 994 904',
                     ),
                   ),
                   const SizedBox(height: 16),
