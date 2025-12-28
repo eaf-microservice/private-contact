@@ -16,6 +16,14 @@ dependencies:
   permission_handler: ^12.0.1
   shared_preferences: ^2.5.4
   url_launcher: ^6.3.2
+  # contacts_service removed — using platform channel for contacts to avoid plugin AGP issues
+  share_plus: any
+  http: any
+  firebase_core: any
+  firebase_storage: any
+  cloud_firestore: any
+  firebase_auth: any
+  workmanager: any
 
 dev_dependencies:
   flutter_test:

